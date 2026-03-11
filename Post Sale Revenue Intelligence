@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Xerox SecureAI Growth OS — Post-Sale Revenue System (IT • AI • Security)</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --surface: #ffffff;
+      --surface-2: #f8fbff;
+      --text: #152130;
+      --muted: #5b6b7d;
+      --border: #d4deeb;
+      --primary: #0b57d0;
+      --primary-soft: #eaf1ff;
+      --accent: #0f766e;
+      --warn: #b45309;
+      --danger: #b42318;
+      --shadow: 0 1px 2px rgba(16,24,40,.08), 0 12px 28px rgba(16,24,40,.06);
+      --radius: 12px;
+      --focus: #ffbf47;
+    }
+    body.dark {
+      --bg: #0d1624;
+      --surface: #121d2c;
+      --surface-2: #182437;
+      --text: #e8eef8;
+      --muted: #9fb0c6;
+      --border: #2b3a53;
+      --primary: #7cb2ff;
+      --primary-soft: #1d2f48;
+      --accent: #5fd6be;
+      --warn: #f2b25f;
+      --danger: #ff8d8d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 30px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.45;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 64px 1fr;
+    }
+
+    header.appbar {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto;
+      gap: .8rem;
+      align-items: center;
+      padding: .6rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand { font-weight: 700; white-space: nowrap; }
+    .pill {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: 999px;
+      padding: .2rem .6rem;
+      font-size: .78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .search {
+      width: 100%;
+      max-width: 560px;
+      justify-self: center;
+      position: relative;
+    }
+    .search input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .55rem .7rem;
+      font-size: .95rem;
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    button, select, textarea, input {
+      font: inherit;
+      color: inherit;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: .5rem .75rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--surface-2); }
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn.primary:hover { filter: brightness(1.05); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: calc(100vh - 64px);
+    }
+
+    nav.sidenav {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      padding: .85rem;
+      position: sticky;
+      top: 64px;
+      align-self: start;
+      max-height: calc(100vh - 64px);
+      overflow: auto;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .4rem;
+    }
+    .nav-link {
+      display: block;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: .55rem .7rem;
+      color: var(--text);
+    }
+    .nav-link:hover { background: var(--surface-2); text-decoration: none; }
+    .nav-link.active {
+      border-color: #b8cef6;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .breadcrumbs {
+      margin: 0 0 .8rem;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .grid { display: grid; gap: .9rem; }
+    .grid.kpis { grid-template-columns: repeat(4,minmax(0,1fr)); }
+    .grid.two { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .grid.three { grid-template-columns: repeat(3,minmax(0,1fr)); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: .9rem;
+    }
+    .card h2,.card h3 { margin: 0 0 .45rem; }
+    .muted { color: var(--muted); }
+
+    .kpi .value { font-size: 1.35rem; font-weight: 700; }
+    .kpi .delta { color: var(--accent); font-size: .86rem; }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: .9rem;
+    }
+    th, td {
+      text-align: left; border-bottom: 1px solid var(--border); padding: .5rem .3rem;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; }
+
+    .status {
+      font-size: .78rem; padding: .12rem .45rem; border-radius: 999px;
+      border: 1px solid var(--border); display: inline-block;
+    }
+    .s-new { background: #eef4ff; color: #1f4ea5; }
+    .s-progress { background: #ecfdf3; color: #0f5132; }
+    .s-blocked { background: #fff4e5; color: #8b5e00; }
+    .s-won { background: #ebfff7; color: #116149; }
+
+    .activity { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+    .activity li { border-left: 3px solid var(--primary); padding-left: .6rem; }
+
+    .cta {
+      display: flex; align-items: center; justify-content: space-between; gap: .7rem;
+      background: linear-gradient(180deg,var(--primary-soft),transparent);
+    }
+
+    details.layer {
+      border: 1px solid var(--border); border-radius: 10px; padding: .55rem .75rem; margin-bottom: .55rem; background: var(--surface);
+    }
+    details.layer summary { cursor: pointer; font-weight: 600; }
+
+    .pipeline { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+    .pipeline span { background: var(--surface-2); border: 1px solid var(--border); padding: .3rem .55rem; border-radius: 999px; }
+
+    .play-lane h3 { margin-bottom: .6rem; }
+    .play-card { border: 1px solid var(--border); border-radius: 10px; padding: .65rem; background: var(--surface-2); }
+    .chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .chip { border: 1px solid var(--border); border-radius: 999px; padding: .1rem .45rem; font-size: .78rem; }
+
+    .drawer {
+      position: fixed; top: 64px; right: -430px; width: min(420px,95vw); height: calc(100vh - 64px);
+      background: var(--surface); border-left: 1px solid var(--border); box-shadow: var(--shadow);
+      padding: 1rem; overflow: auto; transition: right .2s ease; z-index: 20;
+    }
+    .drawer.open { right: 0; }
+
+    .gauge { margin-bottom: .5rem; }
+    .bar {
+      height: 10px; width: 100%; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden;
+    }
+    .bar > i { display: block; height: 100%; background: linear-gradient(90deg,var(--primary),var(--accent)); }
+
+    .reco { border: 1px solid var(--border); border-radius: 10px; padding: .65rem; margin-bottom: .55rem; background: var(--surface-2); }
+
+    .wizard { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; z-index: 40; }
+    .wizard.open { display: grid; place-items: center; }
+    .wizard-panel {
+      width: min(860px,96vw); max-height: 92vh; overflow: auto;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 1rem;
+    }
+    .steps { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .8rem; }
+
+    .kanban { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: .6rem; }
+    .column { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); padding: .5rem; min-height: 130px; }
+    .task { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: .4rem; margin-bottom: .4rem; font-size: .85rem; }
+
+    .tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .8rem; }
+    .tab.active { border-color: #b8cef6; background: var(--primary-soft); color: var(--primary); }
+
+    svg.chart { width: 100%; height: 200px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+
+    .matrix td,.matrix th { text-align: center; }
+
+    .toast-wrap { position: fixed; right: 1rem; bottom: 1rem; z-index: 60; display: grid; gap: .5rem; }
+    .toast { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); border-left: 4px solid var(--accent); padding: .55rem .7rem; border-radius: 8px; min-width: 220px; }
+
+    .tooltip { position: relative; cursor: help; border-bottom: 1px dashed var(--muted); }
+    .tooltip:hover::after, .tooltip:focus-visible::after {
+      content: attr(data-tip); position: absolute; left: 0; top: 110%; z-index: 30;
+      background: var(--text); color: var(--surface); padding: .35rem .45rem; border-radius: 6px; width: 220px; font-size: .78rem;
+    }
+
+    .empty { border: 1px dashed var(--border); border-radius: 8px; padding: .7rem; color: var(--muted); text-align: center; }
+
+    .brief { display: none; }
+
+    @media (max-width: 1100px) {
+      .grid.kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .grid.two,.grid.three { grid-template-columns: 1fr; }
+      .kanban { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 860px) {
+      .workspace { grid-template-columns: 1fr; }
+      nav.sidenav { position: static; top: auto; max-height: none; }
+      header.appbar { grid-template-columns: 1fr 1fr; grid-auto-rows: auto; }
+      .search { grid-column: 1 / -1; max-width: none; }
+      .kanban { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      header.appbar, nav.sidenav, .workspace > .content > :not(.brief), .toast-wrap, .drawer, .wizard { display: none !important; }
+      .brief { display: block !important; }
+      body { background: #fff; color: #000; }
+      .brief .card { box-shadow: none; border-color: #c8c8c8; break-inside: avoid; }
+      details.layer { padding-bottom: .6rem; }
+      details.layer:not([open]) > *:not(summary) { display: block; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="appbar">
+    <div class="brand">Xerox SecureAI Growth OS</div>
+    <span class="pill">Enterprise</span>
+    <div class="search"><input id="globalSearch" type="search" placeholder="Search accounts, plays, signals, packages, governance..." aria-label="Global search" /></div>
+    <button id="themeToggle" class="btn" aria-pressed="false">Dark mode</button>
+    <button id="printBrief" class="btn primary">Print Brief</button>
+  </header>
+
+  <div class="workspace">
+    <nav class="sidenav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#overview" data-view="overview">Overview (Dashboard)</a></li>
+        <li><a class="nav-link" href="#architecture" data-view="architecture">Architecture</a></li>
+        <li><a class="nav-link" href="#plays" data-view="plays">Play Library</a></li>
+        <li><a class="nav-link" href="#account" data-view="account">Account Workspace</a></li>
+        <li><a class="nav-link" href="#orchestration" data-view="orchestration">Orchestration (Sprints)</a></li>
+        <li><a class="nav-link" href="#analytics" data-view="analytics">Analytics</a></li>
+        <li><a class="nav-link" href="#governance" data-view="governance">Governance</a></li>
+        <li><a class="nav-link" href="#admin" data-view="admin">Admin (Objects &amp; Config)</a></li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <p class="breadcrumbs" id="breadcrumbs">Home / Overview</p>
+
+      <section id="view-overview" class="view active searchable" data-name="Overview Dashboard">
+        <div class="grid kpis">
+          <article class="card kpi"><h3>Post-Sale Expansion ARR (YTD)</h3><div class="value">$14.8M</div><div class="delta">▲ 22% vs prior period</div></article>
+          <article class="card kpi"><h3>Security Attach Rate</h3><div class="value">41%</div><div class="delta">▲ 5 pts QoQ</div></article>
+          <article class="card kpi"><h3>AI Pilot → Paid Conversion</h3><div class="value">36%</div><div class="delta">▲ 7 pts QoQ</div></article>
+          <article class="card kpi"><h3>Managed Services Penetration</h3><div class="value">28%</div><div class="delta">▲ 3 pts QoQ</div></article>
+        </div>
+
+        <div class="grid two" style="margin-top:.9rem;">
+          <article class="card">
+            <h2>Next Best Plays Queue</h2>
+            <table id="queueTable">
+              <thead><tr><th>Account</th><th>Play</th><th>Why Now</th><th>Confidence</th><th>Est. Value</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Northwind Health</td><td>Secure Print Hardening</td><td>Firmware age + open audit gaps</td><td>88%</td><td>$240k</td><td>R. Patel</td><td><span class="status s-new">Queued</span></td></tr>
+                <tr><td>Contoso Financial</td><td>Zero-Trust Print &amp; Workflow</td><td>Identity integration ready</td><td>84%</td><td>$310k</td><td>L. Gomez</td><td><span class="status s-progress">Review</span></td></tr>
+                <tr><td>Fabrikam Retail</td><td>AI Intake → Routed Workflow</td><td>Scan-to-email saturation</td><td>81%</td><td>$190k</td><td>E. Jones</td><td><span class="status s-new">Queued</span></td></tr>
+                <tr><td>Alpine Logistics</td><td>Managed Monitoring/Patching</td><td>Incident cluster in 60 days</td><td>79%</td><td>$165k</td><td>M. Chan</td><td><span class="status s-progress">In triage</span></td></tr>
+                <tr><td>Adventure Works</td><td>30-Day AI Workflow Pilot</td><td>Process owner engaged</td><td>77%</td><td>$140k</td><td>C. Hall</td><td><span class="status s-new">Queued</span></td></tr>
+                <tr><td>Woodgrove Energy</td><td>Dark Web &amp; Identity Add-On</td><td>Breach exposure tags up</td><td>75%</td><td>$125k</td><td>A. Singh</td><td><span class="status s-blocked">Blocked</span></td></tr>
+                <tr><td>Tailspin Travel</td><td>Secure Print Hardening</td><td>Renewal in 94 days</td><td>74%</td><td>$118k</td><td>P. Lee</td><td><span class="status s-new">Queued</span></td></tr>
+                <tr><td>Wingtip Manufacturing</td><td>Managed Monitoring/Patching</td><td>Ticket intensity trend</td><td>72%</td><td>$132k</td><td>T. Green</td><td><span class="status s-progress">Review</span></td></tr>
+                <tr><td>Proseware Pharma</td><td>Zero-Trust Print &amp; Workflow</td><td>Compliance initiative funded</td><td>70%</td><td>$205k</td><td>V. Cruz</td><td><span class="status s-new">Queued</span></td></tr>
+                <tr><td>Blue Yonder Media</td><td>AI Intake → Routed Workflow</td><td>Manual routing bottlenecks</td><td>69%</td><td>$98k</td><td>S. Reed</td><td><span class="status s-new">Queued</span></td></tr>
+              </tbody>
+            </table>
+            <div id="queueEmpty" class="empty" hidden>No results for current filter.</div>
+          </article>
+
+          <div class="grid">
+            <article class="card">
+              <h2>Signals Trending</h2>
+              <ul>
+                <li>Firmware Staleness ↑</li>
+                <li>Service Friction Clusters ↑</li>
+                <li>Scan-to-Email Saturation ↑</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h2>Activity Feed</h2>
+              <ul class="activity" id="activityFeed">
+                <li>Contoso Financial — security assessment scheduled for Thursday.</li>
+                <li>Northwind Health — pilot statement of work approved.</li>
+                <li>Fabrikam Retail — package upgraded to Secure + Automate.</li>
+                <li>Alpine Logistics — escalation triggered for patching backlog.</li>
+              </ul>
+            </article>
+            <article class="card cta">
+              <div>
+                <h2 style="margin:0;">Start a Sprint</h2>
+                <p class="muted" style="margin:.25rem 0 0;">Launch a 30-day micro-campaign with prebuilt playbooks.</p>
+              </div>
+              <button class="btn primary" data-view-jump="orchestration">Start Sprint</button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-architecture" class="view searchable" data-name="Architecture">
+        <article class="card">
+          <h2>Reference Architecture (Layers 0–7)</h2>
+          <p class="muted">Purpose-built for Signals → Plays → Packages → Motions.</p>
+          <p>
+            <button id="expandLayers" class="btn">Expand all</button>
+            <button id="collapseLayers" class="btn">Collapse all</button>
+          </p>
+
+          <details class="layer"><summary>Layer 0 — Data Sources</summary><p><strong>Purpose:</strong> aggregate operating and exposure evidence.</p><p><strong>Inputs:</strong> internal service history, telemetry, supplies, contracts, CRM; external/opt-in identity integration status, compliance tags, dark web/breach exposure, tech stack/cloud initiatives.</p><p><strong>Outputs:</strong> normalized source events.</p><p><strong>Owner:</strong> Data Engineering.</p><p><strong>Data/Control:</strong> opt-in governance for external enrichment.</p></details>
+          <details class="layer"><summary>Layer 1 — Ingestion + Identity Resolution</summary><p><strong>Purpose:</strong> ETL/ELT and entity resolution across account/site/device/contract/contact.</p><p><strong>Inputs:</strong> source events.</p><p><strong>Outputs:</strong> AccountGraph.</p><p><strong>Owner:</strong> Platform Engineering.</p><p><strong>Data/Control:</strong> confidence-based identity merges with audit trail.</p></details>
+          <details class="layer"><summary>Layer 2 — Signal Factory (Feature Store)</summary><p><strong>Purpose:</strong> compute security posture, AI/workflow opportunity, and IT propensity signals.</p><p><strong>Inputs:</strong> AccountGraph + events.</p><p><strong>Outputs:</strong> Signal objects (value/timestamp/source/confidence/decay_rate).</p><p><strong>Owner:</strong> Data Science.</p><p><strong>Data/Control:</strong> freshness windows and drift checks.</p></details>
+          <details class="layer"><summary>Layer 3 — Scoring &amp; Decisioning</summary><p><strong>Purpose:</strong> produce Security Risk, AI Automation Potential, IT Services Propensity and Play Fit Score (Fit, Readiness, Confidence, Value estimate).</p><p><strong>Inputs:</strong> Signal portfolio.</p><p><strong>Outputs:</strong> next best plays + why now + proof to gather.</p><p><strong>Owner:</strong> Decisioning Team.</p><p><strong>Data/Control:</strong> explainable ranking and threshold governance.</p></details>
+          <details class="layer"><summary>Layer 4 — Offer &amp; Bundle Composer</summary><p><strong>Purpose:</strong> map plays to buyable packages.</p><p><strong>Inputs:</strong> ranked plays, pricing rules.</p><p><strong>Outputs:</strong> Secure Essentials, Secure + Automate, SecureAI Managed bundles.</p><p><strong>Owner:</strong> Product + Commercial Ops.</p><p><strong>Data/Control:</strong> SKU/term guardrails.</p></details>
+          <details class="layer"><summary>Layer 5 — Orchestration &amp; Workflow</summary><p><strong>Purpose:</strong> route tasks and execute 30-day micro-campaign sprints.</p><p><strong>Inputs:</strong> play selection and package intent.</p><p><strong>Outputs:</strong> tasks, meetings, proposals, escalations.</p><p><strong>Owner:</strong> Revenue Operations.</p><p><strong>Data/Control:</strong> SLA and escalation rules.</p></details>
+          <details class="layer"><summary>Layer 6 — Measurement &amp; Learning</summary><p><strong>Purpose:</strong> monitor execution, commercial, and model metrics; reweight signals.</p><p><strong>Inputs:</strong> outcomes + telemetry.</p><p><strong>Outputs:</strong> threshold updates and targeting improvements.</p><p><strong>Owner:</strong> Analytics + ML Ops.</p><p><strong>Data/Control:</strong> drift and bias checks.</p></details>
+          <details class="layer"><summary>Layer 7 — Governance</summary><p><strong>Purpose:</strong> enforce data minimization, segregation, RBAC, audit logs, explainability, partner risk management.</p><p><strong>Inputs:</strong> policy controls and audit events.</p><p><strong>Outputs:</strong> compliance attestations and risk actions.</p><p><strong>Owner:</strong> Security &amp; Compliance.</p><p><strong>Data/Control:</strong> retention and role-based least privilege.</p></details>
+        </article>
+
+        <article class="card" style="margin-top:.9rem;">
+          <h2>Data Flow</h2>
+          <div class="pipeline">
+            <span>Sources</span> → <span>Ingestion</span> → <span>Signal Factory</span> → <span>Scoring</span> → <span>Composer</span> → <span>Orchestration</span> → <span>Learning</span> → <span>Governance</span>
+          </div>
+        </article>
+
+        <article class="card" style="margin-top:.9rem;">
+          <h2>Security-by-design Checklist</h2>
+          <ul>
+            <li><input type="checkbox" checked disabled /> Data minimization by default</li>
+            <li><input type="checkbox" checked disabled /> Least privilege and RBAC separation</li>
+            <li><input type="checkbox" checked disabled /> Audit logging on every decision</li>
+            <li><input type="checkbox" checked disabled /> Explainability snapshots per recommendation</li>
+            <li><input type="checkbox" checked disabled /> Partner due-diligence for dark web monitoring</li>
+          </ul>
+        </article>
+      </section>
+
+      <section id="view-plays" class="view searchable" data-name="Play Library">
+        <div class="grid three">
+          <article class="card play-lane">
+            <h3>Lane A: Security</h3>
+            <div class="play-card" data-play="Secure Print Hardening Kit"><strong>Secure Print Hardening Kit</strong><p class="muted">Reduce exposure from stale firmware and weak auth controls.</p><button class="btn" data-open-play="Secure Print Hardening Kit">Open details</button></div>
+            <div class="play-card" data-play="Dark Web & Identity Protection Add-On" style="margin-top:.55rem;"><strong>Dark Web &amp; Identity Protection Add-On</strong><p class="muted">Monitor credential exposure and tie to account response actions.</p><button class="btn" data-open-play="Dark Web & Identity Protection Add-On">Open details</button></div>
+            <div class="play-card" data-play="Zero-Trust Print & Workflow" style="margin-top:.55rem;"><strong>Zero-Trust Print &amp; Workflow</strong><p class="muted">Identity-centric policy and controlled workflow pathways.</p><button class="btn" data-open-play="Zero-Trust Print & Workflow">Open details</button></div>
+          </article>
+          <article class="card play-lane">
+            <h3>Lane B: AI Workflow</h3>
+            <div class="play-card" data-play="30-Day AI Workflow Pilot (one process)"><strong>30-Day AI Workflow Pilot (one process)</strong><p class="muted">Pilot one high-friction process with measurable cycle-time gain.</p><button class="btn" data-open-play="30-Day AI Workflow Pilot (one process)">Open details</button></div>
+            <div class="play-card" data-play="AI Document Intake → Routed Workflow" style="margin-top:.55rem;"><strong>AI Document Intake → Routed Workflow</strong><p class="muted">Automate intake, classify, and route by business rule.</p><button class="btn" data-open-play="AI Document Intake → Routed Workflow">Open details</button></div>
+          </article>
+          <article class="card play-lane">
+            <h3>Lane C: IT Services</h3>
+            <div class="play-card" data-play="Managed Monitoring/Patching Starter"><strong>Managed Monitoring/Patching Starter</strong><p class="muted">Starter managed tier for proactive health and compliance posture.</p><button class="btn" data-open-play="Managed Monitoring/Patching Starter">Open details</button></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-account" class="view searchable" data-name="Account Workspace">
+        <article class="card">
+          <h2>Account Workspace</h2>
+          <label for="accountSelect">Select Account:</label>
+          <select id="accountSelect"></select>
+          <div id="accountSummary" style="margin-top:.8rem;"></div>
+        </article>
+      </section>
+
+      <section id="view-orchestration" class="view searchable" data-name="Orchestration">
+        <div class="grid three">
+          <article class="card"><h3>Secure Print Hardening Sprint (30 days)</h3><p>Goal: reduce high-risk device posture by 35% in target cohort.</p><p><strong>Cohort:</strong> risk score > 70, renewal &lt; 180 days.</p><p><strong>Cadence:</strong> weekly review on Tuesdays.</p><p><strong>Scoreboard:</strong> started 18, in-progress 11, converted 5, blocked 2</p><button class="btn primary launch-sprint" data-sprint="Secure Print Hardening Sprint">Launch Sprint</button></article>
+          <article class="card"><h3>AI Workflow Pilot Sprint (30 days)</h3><p>Goal: deliver one paid workflow pilot with baseline metrics.</p><p><strong>Cohort:</strong> high scan intensity + process owner availability.</p><p><strong>Cadence:</strong> weekly review on Thursdays.</p><p><strong>Scoreboard:</strong> started 14, in-progress 8, converted 3, blocked 3</p><button class="btn primary launch-sprint" data-sprint="AI Workflow Pilot Sprint">Launch Sprint</button></article>
+          <article class="card"><h3>Managed Endpoint Sprint (30 days)</h3><p>Goal: convert high-friction accounts to managed monitoring starter.</p><p><strong>Cohort:</strong> incident clusters + SLA dissatisfaction proxies.</p><p><strong>Cadence:</strong> weekly review on Wednesdays.</p><p><strong>Scoreboard:</strong> started 20, in-progress 13, converted 4, blocked 3</p><button class="btn primary launch-sprint" data-sprint="Managed Endpoint Sprint">Launch Sprint</button></article>
+        </div>
+
+        <article class="card" style="margin-top:.9rem;">
+          <h2>Task Board</h2>
+          <div class="kanban" id="kanbanBoard">
+            <div class="column" data-col="Planned"><h3>Planned</h3><div class="task">Northwind: schedule hardening kickoff</div></div>
+            <div class="column" data-col="Active"><h3>Active</h3><div class="task">Contoso: discovery interviews in progress</div></div>
+            <div class="column" data-col="Waiting"><h3>Waiting</h3><div class="task">Fabrikam: legal review of data handling addendum</div></div>
+            <div class="column" data-col="Won"><h3>Won</h3><div class="task">Adventure Works: Secure + Automate signed</div></div>
+            <div class="column" data-col="Lost"><h3>Lost</h3><div class="task">Woodgrove: budget deferred to next quarter</div></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-analytics" class="view searchable" data-name="Analytics">
+        <div class="tabs" role="tablist" aria-label="Analytics tabs">
+          <button class="btn tab active" data-tab="funnel">Execution Funnel</button>
+          <button class="btn tab" data-tab="commercial">Commercial Outcomes</button>
+          <button class="btn tab" data-tab="quality">Model Quality</button>
+        </div>
+
+        <div id="tab-funnel" class="tab-panel">
+          <article class="card"><h3>Execution Funnel</h3>
+            <svg class="chart" viewBox="0 0 600 220" aria-label="Funnel chart">
+              <rect x="30" y="30" width="90" height="150" fill="#7cb2ff" /><text x="35" y="200" font-size="12">Outreach 520</text>
+              <rect x="140" y="55" width="90" height="125" fill="#63a4ff" /><text x="145" y="200" font-size="12">Meeting 340</text>
+              <rect x="250" y="80" width="90" height="100" fill="#4d95ff" /><text x="255" y="200" font-size="12">Assessment 250</text>
+              <rect x="360" y="105" width="90" height="75" fill="#3b86ff" /><text x="365" y="200" font-size="12">Proposal 170</text>
+              <rect x="470" y="130" width="90" height="50" fill="#2f7dff" /><text x="475" y="200" font-size="12">Close 96</text>
+            </svg>
+          </article>
+        </div>
+
+        <div id="tab-commercial" class="tab-panel" hidden>
+          <article class="card"><h3>Attach Rate Trend</h3>
+            <svg class="chart" viewBox="0 0 600 220" aria-label="Attach trend line">
+              <polyline fill="none" stroke="#2f7dff" stroke-width="3" points="40,170 120,162 200,150 280,140 360,128 440,117 520,105" />
+              <line x1="40" y1="180" x2="560" y2="180" stroke="#98a9bf" /><text x="42" y="198" font-size="12">Jan</text><text x="120" y="198" font-size="12">Feb</text><text x="200" y="198" font-size="12">Mar</text><text x="280" y="198" font-size="12">Apr</text><text x="360" y="198" font-size="12">May</text><text x="440" y="198" font-size="12">Jun</text><text x="520" y="198" font-size="12">Jul</text>
+            </svg>
+          </article>
+        </div>
+
+        <div id="tab-quality" class="tab-panel" hidden>
+          <article class="card"><h3>Precision by Play</h3>
+            <svg class="chart" viewBox="0 0 600 220" aria-label="Precision bar chart">
+              <rect x="60" y="70" width="60" height="110" fill="#7cb2ff" /><text x="52" y="198" font-size="12">Hardening</text>
+              <rect x="170" y="90" width="60" height="90" fill="#6ba7ff" /><text x="166" y="198" font-size="12">DarkWeb</text>
+              <rect x="280" y="65" width="60" height="115" fill="#5a9cff" /><text x="260" y="198" font-size="12">Zero-Trust</text>
+              <rect x="390" y="78" width="60" height="102" fill="#4c91ff" /><text x="372" y="198" font-size="12">AI Pilot</text>
+              <rect x="500" y="96" width="60" height="84" fill="#3b86ff" /><text x="475" y="198" font-size="12">Managed</text>
+            </svg>
+          </article>
+        </div>
+
+        <article class="card" style="margin-top:.9rem;">
+          <h3>Insights</h3>
+          <ul>
+            <li>Security attach is strongest where identity integration is already deployed.</li>
+            <li>AI pilot conversion improves when process owner signs success criteria pre-kickoff.</li>
+            <li>Managed starter closes 18% faster when paired with renewal window under 120 days.</li>
+            <li>Confidence drops when service telemetry gaps exceed 10-day freshness SLA.</li>
+            <li>Hybrid system-of-action pattern yields highest win rate across enterprise accounts.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section id="view-governance" class="view searchable" data-name="Governance">
+        <article class="card">
+          <h2>Compliance Console</h2>
+          <h3>RBAC Matrix</h3>
+          <table class="matrix"><thead><tr><th>Role</th><th>View Scores</th><th>Edit Thresholds</th><th>Launch Play</th><th>Export Config</th></tr></thead>
+            <tbody>
+              <tr><td>CSM</td><td>✓</td><td>—</td><td>✓</td><td>—</td></tr>
+              <tr><td>Specialist</td><td>✓</td><td>—</td><td>✓</td><td>—</td></tr>
+              <tr><td>Manager</td><td>✓</td><td>✓</td><td>✓</td><td>—</td></tr>
+              <tr><td>Admin</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style="margin-top:.8rem;">Audit Log</h3>
+          <table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Object</th><th>Result</th></tr></thead><tbody>
+            <tr><td>2026-03-10 09:20</td><td>L. Gomez</td><td>Launch Play</td><td>Contoso / Zero-Trust</td><td>Success</td></tr>
+            <tr><td>2026-03-10 11:05</td><td>Admin</td><td>Update threshold</td><td>Security Risk score</td><td>Success</td></tr>
+            <tr><td>2026-03-10 13:14</td><td>R. Patel</td><td>Create task batch</td><td>Northwind sprint</td><td>Success</td></tr>
+          </tbody></table>
+
+          <h3 style="margin-top:.8rem;">Explainability Example</h3>
+          <p><strong>Why was “Secure Print Hardening” recommended?</strong> Firmware staleness (high), auth coverage gap (medium), renewal window (near-term), and incident trend (elevated) drove score rank with 88% confidence.</p>
+
+          <h3>Partner Risk Checklist</h3>
+          <ul>
+            <li>Dark web monitoring partner SOC2 verified</li>
+            <li>Data transfer contract includes breach notification SLA</li>
+            <li>Only hashed or tokenized identifiers shared externally</li>
+          </ul>
+          <p><strong>Data minimization:</strong> retain feature-level signal snapshots for 180 days; aggregate outcomes for 24 months.</p>
+        </article>
+      </section>
+
+      <section id="view-admin" class="view searchable" data-name="Admin">
+        <article class="card">
+          <h2>Canonical Objects</h2>
+          <code id="canonicalObjects">AccountGraph, Signal, Score, Play, OfferPackage, Action, Outcome</code>
+          <p><button class="btn" data-copy="canonicalObjects">Copy canonical objects</button></p>
+
+          <h3>MVP Slice Summary</h3>
+          <code id="mvpSlice">Signals: firmware/config posture proxy, service friction clusters, scan intensity + routing proxy, renewal timing.
+Plays: Secure Print Hardening, 30-day AI workflow pilot, Managed monitoring/patching starter tier.
+Outputs: weekly ranked list, next best play with explainability, sprint scoreboard.</code>
+          <p><button class="btn" data-copy="mvpSlice">Copy MVP slice</button></p>
+
+          <h3>Exec One-liner</h3>
+          <code id="execLine">Xerox SecureAI Growth OS turns installed-base signals into prioritized plays, buyable packages, and measurable post-sale ARR expansion with governance built in.</code>
+          <p><button class="btn" data-copy="execLine">Copy exec one-liner</button></p>
+        </article>
+
+        <article class="card" style="margin-top:.9rem;">
+          <h2>Configuration</h2>
+          <div class="grid two">
+            <div>
+              <label>Signal freshness decay (days)<input id="cfgDecay" type="number" value="14" min="1" /></label><br /><br />
+              <label>Confidence threshold (%)<input id="cfgConfidence" type="number" value="70" min="1" max="100" /></label><br /><br />
+              <label>Play eligibility rule<textarea id="cfgEligibility" rows="4">security_risk > 65 OR ai_potential > 60 OR it_propensity > 62</textarea></label>
+            </div>
+            <div>
+              <label>Default package<select id="cfgPackage"><option>Secure Essentials</option><option selected>Secure + Automate</option><option>SecureAI Managed</option></select></label>
+              <p class="muted">These settings are mock controls for operating policy simulation.</p>
+            </div>
+          </div>
+          <p><button class="btn primary" id="exportConfig">Export Config</button></p>
+        </article>
+      </section>
+
+      <section class="brief" id="print-brief">
+        <article class="card">
+          <h1>Xerox SecureAI Growth OS — Post-Sale Revenue System (IT • AI • Security)</h1>
+          <p><strong>Operating Framework:</strong> Signals → Plays → Packages → Motions.</p>
+          <h2>Core Principles</h2>
+          <ul><li>Outcome-first</li><li>Signal-driven</li><li>Closed-loop learning</li><li>Secure-by-design</li></ul>
+          <h2>Architecture Summary</h2>
+          <ol>
+            <li>Layer 0 Data Sources</li><li>Layer 1 Ingestion + Identity Resolution</li><li>Layer 2 Signal Factory</li><li>Layer 3 Scoring &amp; Decisioning</li><li>Layer 4 Offer &amp; Bundle Composer</li><li>Layer 5 Orchestration &amp; Workflow</li><li>Layer 6 Measurement &amp; Learning</li><li>Layer 7 Governance</li>
+          </ol>
+          <h2>MVP Slice (30–45 days)</h2>
+          <p>Signals: firmware/config posture proxy, service friction clusters, scan intensity + routing proxy, renewal timing.<br />Plays: Secure Print Hardening, 30-day AI workflow pilot, Managed monitoring/patching starter tier.<br />Outputs: weekly ranked list, next best play with explainability, sprint scoreboard.</p>
+          <h2>Next Key Decision</h2>
+          <p>System of action: CRM-led, OS-led, or Hybrid (recommended default).</p>
+        </article>
+      </section>
+
+      <footer class="muted" style="padding:1rem 0;">Xerox SecureAI Growth OS • Enterprise product UI mock • Accessible, responsive, print-ready.</footer>
+    </main>
+  </div>
+</div>
+
+<aside class="drawer" id="playDrawer" aria-live="polite" aria-label="Play details drawer">
+  <button class="btn" id="closeDrawer">Close</button>
+  <div id="drawerBody" style="margin-top:.8rem;"></div>
+</aside>
+
+<div class="wizard" id="playWizard" aria-modal="true" role="dialog" aria-label="Play runner wizard">
+  <div class="wizard-panel">
+    <h2>Play Runner</h2>
+    <div class="steps" id="wizardSteps"></div>
+    <div id="wizardBody"></div>
+    <p style="margin-top:.8rem; display:flex; gap:.5rem;">
+      <button class="btn" id="wizardPrev">Back</button>
+      <button class="btn primary" id="wizardNext">Next</button>
+      <button class="btn" id="wizardClose">Close</button>
+    </p>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<script>
+(() => {
+  const playCatalog = {
+    "Secure Print Hardening Kit": {
+      triggers:["Firmware staleness","Config drift","Low auth coverage"], package:"Secure Essentials", deliverables:["Risk baseline report","Hardening plan","Executive readout"], metrics:["Risk score reduction","Attach conversion","Time to close"], pricing:"Per site + managed policy add-on", roles:["CSM","Security Specialist","IT Ops"]
+    },
+    "Dark Web & Identity Protection Add-On": {
+      triggers:["Breach exposure tag","Identity integration status"], package:"Secure + Automate", deliverables:["Exposure alerting policy","Partner onboarding checklist","Response runbook"], metrics:["Alert response SLA","Upsell rate"], pricing:"Per account subscription", roles:["Security Specialist","Partner Manager"]
+    },
+    "Zero-Trust Print & Workflow": {
+      triggers:["Compliance initiative","Audit logging gaps"], package:"SecureAI Managed", deliverables:["Policy map","Control matrix","Implementation plan"], metrics:["Policy compliance","Audit pass rate"], pricing:"Project fee + recurring managed", roles:["Architect","CISO office","Ops lead"]
+    },
+    "30-Day AI Workflow Pilot (one process)": {
+      triggers:["Scan intensity","Manual routing bottlenecks"], package:"Secure + Automate", deliverables:["Pilot charter","Workflow baseline","Value readout"], metrics:["Cycle-time reduction","Pilot to paid conversion"], pricing:"Fixed pilot fee", roles:["Process Owner","AI Specialist","CSM"]
+    },
+    "AI Document Intake → Routed Workflow": {
+      triggers:["Paper-process flags","Multi-site inconsistency"], package:"Secure + Automate", deliverables:["Intake taxonomy","Routing model","Training handoff"], metrics:["Routing accuracy","Touchless rate"], pricing:"Per workflow + support", roles:["AI Engineer","Ops Manager"]
+    },
+    "Managed Monitoring/Patching Starter": {
+      triggers:["Ticket intensity","Incident clusters","SLA dissatisfaction proxy"], package:"SecureAI Managed", deliverables:["Monitoring baseline","Patch policy","Monthly service review"], metrics:["Incident reduction","SLA compliance"], pricing:"Monthly managed tier", roles:["Managed Services","IT Ops"]
+    }
+  };
+
+  const accounts = {
+    "Northwind Health": {industry:"Healthcare",sites:18,devices:1260,renewal:"120 days",scores:{sec:82,ai:63,it:76}, recos:[
+      {play:"Secure Print Hardening Kit",why:"Firmware age and audit gaps across core clinics.",evidence:"Strong",proof:["Confirm privileged account inventory","Validate MFA coverage","Capture 60-day incident list"],value:"$240k ARR",timeline:"8–12 weeks"},
+      {play:"Managed Monitoring/Patching Starter",why:"Ticket intensity elevated in 3 regions.",evidence:"Medium",proof:["Gather patch SLA baseline","Map escalation paths"],value:"$165k ARR",timeline:"6–10 weeks"}
+    ]},
+    "Contoso Financial": {industry:"Financial Services",sites:11,devices:910,renewal:"94 days",scores:{sec:74,ai:58,it:69}, recos:[
+      {play:"Zero-Trust Print & Workflow",why:"Identity integration is ready and compliance funding approved.",evidence:"Strong",proof:["Validate role policy map","Confirm logging retention"],value:"$310k ARR",timeline:"10–14 weeks"}
+    ]},
+    "Fabrikam Retail": {industry:"Retail",sites:34,devices:1450,renewal:"180 days",scores:{sec:66,ai:84,it:61}, recos:[
+      {play:"AI Document Intake → Routed Workflow",why:"High scan-to-email saturation and routing errors.",evidence:"Strong",proof:["Sample intake exceptions","Measure routing cycle times"],value:"$190k ARR",timeline:"6–9 weeks"},
+      {play:"30-Day AI Workflow Pilot (one process)",why:"Store ops selected invoice exception process.",evidence:"Medium",proof:["Confirm process owner availability"],value:"$140k ARR",timeline:"4–6 weeks"}
+    ]},
+    "Alpine Logistics": {industry:"Logistics",sites:22,devices:980,renewal:"150 days",scores:{sec:71,ai:60,it:81}, recos:[
+      {play:"Managed Monitoring/Patching Starter",why:"Incident clusters and SLA dissatisfaction indicators.",evidence:"Strong",proof:["Review incident taxonomy","Confirm NOC coverage"],value:"$165k ARR",timeline:"6–8 weeks"}
+    ]},
+    "Adventure Works": {industry:"Manufacturing",sites:15,devices:760,renewal:"210 days",scores:{sec:63,ai:77,it:68}, recos:[
+      {play:"30-Day AI Workflow Pilot (one process)",why:"Manual QA document loop has executive sponsor.",evidence:"Medium",proof:["Baseline cycle-time","Define pilot success metrics"],value:"$140k ARR",timeline:"4–6 weeks"}
+    ]},
+    "Woodgrove Energy": {industry:"Energy",sites:27,devices:1120,renewal:"132 days",scores:{sec:79,ai:55,it:73}, recos:[
+      {play:"Dark Web & Identity Protection Add-On",why:"Breach exposure tags rose for two subsidiaries.",evidence:"Medium",proof:["Verify identity provider links","Check legal terms for partner data"],value:"$125k ARR",timeline:"5–7 weeks"}
+    ]}
+  };
+
+  const views = ["overview","architecture","plays","account","orchestration","analytics","governance","admin"];
+  const navLinks = [...document.querySelectorAll('.nav-link')];
+  const viewEls = Object.fromEntries(views.map(v => [v, document.getElementById('view-'+v)]));
+  const breadcrumbs = document.getElementById('breadcrumbs');
+  const globalSearch = document.getElementById('globalSearch');
+
+  function toast(msg){
+    const w = document.getElementById('toastWrap');
+    const el = document.createElement('div');
+    el.className='toast'; el.textContent = msg; w.appendChild(el);
+    setTimeout(()=>el.remove(),2600);
+  }
+
+  function setView(v, persist=true){
+    if(!views.includes(v)) v='overview';
+    views.forEach(name=>viewEls[name].classList.toggle('active',name===v));
+    navLinks.forEach(a=>a.classList.toggle('active',a.dataset.view===v));
+    breadcrumbs.textContent = `Home / ${viewEls[v].dataset.name}`;
+    if(persist) localStorage.setItem('xgs_view',v);
+    history.replaceState(null,'','#'+v);
+  }
+
+  navLinks.forEach(a=>a.addEventListener('click',e=>{e.preventDefault(); setView(a.dataset.view);}));
+  document.querySelectorAll('[data-view-jump]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.viewJump)));
+
+  const hashView = (location.hash||'').replace('#','');
+  setView(hashView || localStorage.getItem('xgs_view') || 'overview', false);
+
+  // Theme
+  const themeToggle = document.getElementById('themeToggle');
+  const initialDark = localStorage.getItem('xgs_theme')==='dark';
+  if(initialDark) document.body.classList.add('dark');
+  themeToggle.setAttribute('aria-pressed', String(initialDark));
+  themeToggle.textContent = initialDark ? 'Light mode' : 'Dark mode';
+  themeToggle.addEventListener('click',()=>{
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('xgs_theme', isDark?'dark':'light');
+    themeToggle.textContent = isDark ? 'Light mode' : 'Dark mode';
+    themeToggle.setAttribute('aria-pressed', String(isDark));
+  });
+
+  // Print brief
+  document.getElementById('printBrief').addEventListener('click',()=>window.print());
+
+  // Architecture expand/collapse
+  const layerEls = [...document.querySelectorAll('details.layer')];
+  document.getElementById('expandLayers').addEventListener('click',()=>layerEls.forEach(d=>d.open=true));
+  document.getElementById('collapseLayers').addEventListener('click',()=>layerEls.forEach(d=>d.open=false));
+
+  // Play drawer
+  const drawer = document.getElementById('playDrawer');
+  const drawerBody = document.getElementById('drawerBody');
+  document.getElementById('closeDrawer').addEventListener('click',()=>drawer.classList.remove('open'));
+  document.querySelectorAll('[data-open-play]').forEach(btn=>btn.addEventListener('click',()=>{
+    const name = btn.dataset.openPlay;
+    const p = playCatalog[name];
+    if(!p) return;
+    drawerBody.innerHTML = `<h2>${name}</h2>
+      <p><strong>Trigger signals:</strong></p><div class="chips">${p.triggers.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+      <p><strong>Package mapping:</strong> ${p.package}</p>
+      <p><strong>Deliverables:</strong> ${p.deliverables.join(', ')}</p>
+      <p><strong>Success metrics:</strong> ${p.metrics.join(', ')}</p>
+      <p><strong>Pricing model:</strong> ${p.pricing}</p>
+      <p><strong>Required roles:</strong> ${p.roles.join(', ')}</p>`;
+    drawer.classList.add('open');
+  }));
+
+  // Account workspace
+  const accountSelect = document.getElementById('accountSelect');
+  Object.keys(accounts).forEach(a=>{
+    const opt = document.createElement('option'); opt.value=a; opt.textContent=a; accountSelect.appendChild(opt);
+  });
+
+  function renderAccount(name){
+    const a = accounts[name]; if(!a) return;
+    localStorage.setItem('xgs_account',name);
+    const wrap = document.getElementById('accountSummary');
+    wrap.innerHTML = `<p><strong>${name}</strong> • ${a.industry} • ${a.sites} sites • ${a.devices} devices • renewal ${a.renewal}</p>
+      <div class="gauge"><strong>Security Risk (${a.scores.sec})</strong><div class="bar"><i style="width:${a.scores.sec}%"></i></div></div>
+      <div class="gauge"><strong>AI Automation Potential (${a.scores.ai})</strong><div class="bar"><i style="width:${a.scores.ai}%"></i></div></div>
+      <div class="gauge"><strong>IT Services Propensity (${a.scores.it})</strong><div class="bar"><i style="width:${a.scores.it}%"></i></div></div>
+      <h3>Top Recommendations</h3>
+      ${a.recos.map((r,i)=>`<div class="reco">
+        <strong>${r.play}</strong>
+        <p><strong>Why now:</strong> ${r.why}</p>
+        <p><strong>Confidence breakdown:</strong> Evidence strength = ${r.evidence}</p>
+        <p><strong>Proof to gather:</strong></p><ul>${r.proof.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <p><strong>Est. value:</strong> ${r.value} • <strong>Timeline:</strong> ${r.timeline}</p>
+        <button class="btn primary" data-run-play="${r.play}" data-account="${name}">Run Play</button>
+      </div>`).join('')}`;
+    wrap.querySelectorAll('[data-run-play]').forEach(b=>b.addEventListener('click',()=>openWizard(b.dataset.play,b.dataset.account)));
+  }
+
+  accountSelect.value = localStorage.getItem('xgs_account') || Object.keys(accounts)[0];
+  renderAccount(accountSelect.value);
+  accountSelect.addEventListener('change',()=>renderAccount(accountSelect.value));
+
+  // Wizard
+  const wizard = document.getElementById('playWizard');
+  const wizardBody = document.getElementById('wizardBody');
+  const wizardSteps = document.getElementById('wizardSteps');
+  const stepNames = ['Stakeholders','Discovery prompts','Evidence capture','Package selection','Next actions'];
+  let step=0, runningPlay='', runningAccount='';
+
+  function renderWizard(){
+    wizardSteps.innerHTML = stepNames.map((s,i)=>`<span class="pill" style="${i===step?'font-weight:700;':''}">${i+1}. ${s}</span>`).join('');
+    if(step===0) wizardBody.innerHTML = `<h3>Stakeholders</h3><label><input type="checkbox" checked /> CIO</label> <label><input type="checkbox" checked /> CISO</label> <label><input type="checkbox" checked /> IT Ops</label> <label><input type="checkbox" checked /> Process Owner</label>`;
+    if(step===1) wizardBody.innerHTML = `<h3>Discovery Prompts</h3><ul><li>What outcomes are prioritized this quarter?</li><li>Where are security or workflow bottlenecks highest?</li><li>What renewal and budget constraints apply?</li></ul>`;
+    if(step===2) wizardBody.innerHTML = `<h3>Evidence Capture</h3><label><input type="checkbox" /> Verified signal freshness</label><br /><label><input type="checkbox" /> Confirmed stakeholder map</label><br /><label><input type="checkbox" /> Baseline metrics captured</label><p><label>Notes<textarea rows="4" style="width:100%; margin-top:.35rem;">Customer requested side-by-side package comparison.</textarea></label></p>`;
+    if(step===3) wizardBody.innerHTML = `<h3>Package Selection</h3><label><input type="radio" name="pkg" checked /> Secure Essentials</label><br /><label><input type="radio" name="pkg" /> Secure + Automate</label><br /><label><input type="radio" name="pkg" /> SecureAI Managed</label>`;
+    if(step===4) wizardBody.innerHTML = `<h3>Next Actions</h3><label><input type="checkbox" checked /> Create discovery follow-up task</label><br /><label><input type="checkbox" checked /> Schedule proposal review</label><br /><label><input type="checkbox" /> Trigger manager approval</label>`;
+    document.getElementById('wizardPrev').disabled = step===0;
+    document.getElementById('wizardNext').textContent = step===4 ? 'Complete' : 'Next';
+  }
+
+  function openWizard(play, account){
+    runningPlay=play; runningAccount=account; step=0; wizard.classList.add('open'); renderWizard();
+  }
+
+  document.getElementById('wizardPrev').addEventListener('click',()=>{ if(step>0){ step--; renderWizard(); }});
+  document.getElementById('wizardNext').addEventListener('click',()=>{
+    if(step<4){ step++; renderWizard(); return; }
+    wizard.classList.remove('open');
+    const activity = document.getElementById('activityFeed');
+    const li = document.createElement('li');
+    li.textContent = `${runningAccount} — ${runningPlay} moved to In Progress via Play Runner.`;
+    activity.prepend(li);
+    toast(`Play launched: ${runningPlay}`);
+  });
+  document.getElementById('wizardClose').addEventListener('click',()=>wizard.classList.remove('open'));
+
+  // Sprint launch
+  document.querySelectorAll('.launch-sprint').forEach(btn=>btn.addEventListener('click',()=>{
+    const col = document.querySelector('.column[data-col="Planned"]');
+    const task = document.createElement('div');
+    task.className='task'; task.textContent = `${btn.dataset.sprint}: newly launched`; col.appendChild(task);
+    toast(`Sprint launched: ${btn.dataset.sprint}`);
+  }));
+
+  // Analytics tabs
+  document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.hidden=true);
+    document.getElementById('tab-'+btn.dataset.tab).hidden=false;
+  }));
+
+  // Copy buttons
+  document.querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click', async()=>{
+    const id = btn.dataset.copy; const text = document.getElementById(id)?.innerText || '';
+    try { await navigator.clipboard.writeText(text); toast('Copied to clipboard'); } catch { toast('Clipboard unavailable'); }
+  }));
+
+  // Export config
+  document.getElementById('exportConfig').addEventListener('click',()=>{
+    const config = {
+      signal_freshness_decay_days: Number(document.getElementById('cfgDecay').value),
+      confidence_threshold: Number(document.getElementById('cfgConfidence').value),
+      play_eligibility_rule: document.getElementById('cfgEligibility').value,
+      package_default: document.getElementById('cfgPackage').value,
+      generated_at: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(config,null,2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='secureai-growth-os-config.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    toast('Configuration exported');
+  });
+
+  // Global search filter
+  globalSearch.addEventListener('input',()=>{
+    const q = globalSearch.value.trim().toLowerCase();
+    document.querySelectorAll('.searchable').forEach(v=>{
+      const txt = v.innerText.toLowerCase();
+      v.dataset.matches = !q || txt.includes(q) ? '1':'0';
+    });
+
+    const active = document.querySelector('.view.active');
+    if(active && active.id==='view-overview'){
+      const rows = [...document.querySelectorAll('#queueTable tbody tr')];
+      let shown = 0;
+      rows.forEach(r=>{ const keep = !q || r.innerText.toLowerCase().includes(q); r.hidden=!keep; if(keep) shown++; });
+      document.getElementById('queueEmpty').hidden = shown!==0;
+    }
+
+    // if current view doesn't match, still keep visible but show empty helper
+    const existing = active.querySelector('.empty.dynamic-empty');
+    if(existing) existing.remove();
+    if(q && active.dataset.matches==='0'){
+      const e = document.createElement('div'); e.className='empty dynamic-empty'; e.textContent='No results in this view for current filter.';
+      active.prepend(e);
+    }
+  });
+})();
+</script>
+</body>
+</html>
